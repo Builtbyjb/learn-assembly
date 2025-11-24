@@ -1,3 +1,5 @@
+/* A Simple calculator written in arm64 assembly */
+
 .global _main
 .align 2
 .text
@@ -7,41 +9,49 @@ _main:
     b.ne   _invalid_argument
 
     ldr     x2, [x1, #8] // First command line argument
-    ldr     x3, [x1, #16] // Second command line argument
-    ldr     x4, [x1, #24] // third command line argument
-
+    bl      _str_to_int
     ldr     w0, [x2]
-    ldr     w1, [x4]
 
-    cmp     x3, #'+'
-    b.eq    _add
+    ldr     x3, [x1, #16] // Second command line argument
+    ldrb    w3, [x3] // Storing in operator
 
-    cmp     x3, #'*'
-    b.eq    _mul
+    ldr     x2, [x1, #24] // third command line argument
+    bl      _str_to_int
+    ldr     w1, [x2]
 
-    cmp     x3, #'-'
-    b.eq    _sub
+    cmp     w3, #'+'
+    b.eq    _addition
 
-    cmp     x3, #'/'
-    b.eq    _div
+    cmp     w3, #'*'
+    b.eq    _multiplication
 
-_add:
+    cmp     w3, #'-'
+    b.eq    _subtraction
+
+    cmp     w3, #'/'
+    b.eq    _division
+
+_addition:
     add     w0, w0, w1
-    b       _int_to_string
-
-_sub:
-    sub     w0, w0, w1
+    bl      _int_to_str
     b       _print_value
 
-_div:
+_subtraction:
+    sub     w0, w0, w1
+    bl      _int_to_str
+    b       _print_value
+
+_division:
     cmp     w1, #0
     b.eq    _invalid_argument
-    udiv     w0, w0, w1
-    b       _int_to_string
+    udiv    w0, w0, w1
+    bl      _int_to_str
+    b       _print_value
 
-_mul:
+_multiplication:
     mul     w0, w0, w1
-    b       _int_to_string
+    bl      _int_to_str
+    b       _print_value
 
 _invalid_argument:
     adr     x1, error_msg
@@ -65,26 +75,42 @@ _exit:
     mov     x16, #1
     svc     #0x0
 
- _int_to_string:
+_str_to_int:
+    mov     x10, #0 // Accumulator (result)
+    mov     x11, #10 // Constant
+    mov     x12, #0 // Sign flag (0 = +, 1 = -)
+
+    // Check for negative sign
+    ldrb    w9, [x2] // Load first byte
+    cmp     w9, #45 // Check if the first byte (character) is a negative sign ('-' is 45 is ASCII)
+    b.ne    _int_convert_loop // If the first byte (character) is not negative start the loop
+    mov     x12, #1 // Update negative flag
+    add     x2, x2, #1 // Move the pointer to the next byte (Character)
+
+_int_convert_loop:
+
+    ret
+
+ _int_to_str:
     mov     x19, #0 // character count
     mov     w2, #10 // divisor
     sub     sp, sp, #64 // Allocate memory on the stack
 
- _convert_loop:
+ _str_convert_loop:
     udiv    w4, w0, w2
-    msub    w5, w4, w2, w0 // Get reminder
+    msub    w5, w4, w2, w0 // Get remainder
     add     w5, w5, #'0' // Convert int to char
     strb    w5, [sp, x19]
     add     x19, x19, #1
     mov     w0, w4
-    cbnz    w0, _convert_loop
+    cbnz    w0, _str_convert_loop
 
     mov     x4, #0
     sub     x18, x19, #1
 
  _copy:
     ldrb    w5, [sp, x18] // Loads a character from the stack at index x18
-    strb    w5, [x1, x4]
+    strb    w5, [x1, x4] // Store the character w5 to x1 at index x4
     add     x4, x4, #1
     sub     x18, x18, #1
     cmp     x4, x19
@@ -97,4 +123,4 @@ _exit:
     .ascii  "\n"
 
 error_msg:
-    .ascii "Invalid Arguments: Example usage <progam> 8 + 7"
+    .ascii "Invalid Arguments: Example usage <program> 8 + 7"

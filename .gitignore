@@ -1,4 +1,5 @@
-calasm.o
-calasm
-.calasm.s.swp
-/calasm.dSYM/
+calc.o
+calc
+.calc.s.swp
+/calc.dSYM/
+TODO.md

@@ -1,5 +1,5 @@
-calc.o
-calc
-.calc.s.swp
-/calc.dSYM/
+calculator.o
+calculator
+.calculator.s.swp
+/calculator.dSYM/
 TODO.md

@@ -40,7 +40,7 @@ _subtraction:
     b       _print_value
 
 _division:
-    cmp     w1, #0
+    cmp     w7, #0
     b.eq    _zero_division_error
     udiv    w0, w0, w7
     bl      _int_to_str
@@ -93,6 +93,7 @@ _str_to_int:
 _int_convert_loop:
     ldrb    w9, [x2], #1
     cbz     w9, _end_int_convert_loop
+    sub     x9, x9, #48 // Subtract 48 from x9 to get integer value
     madd    x10, x10, x11, x9 // x9 equals w9 because the upper bits are zeroed out
     b       _int_convert_loop
 
@@ -102,7 +103,7 @@ _end_int_convert_loop:
     neg     x10, x10
 
 _return_int:
-    sub     x2, x10, #48 // Subtract 48 from x10 to get integer value
+    mov     x2, x10
     ret
 
  _int_to_str:

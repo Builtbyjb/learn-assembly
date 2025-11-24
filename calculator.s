@@ -13,12 +13,13 @@ _main:
     ldr     w0, [x2]
 
     ldr     x3, [x1, #16] // Second command line argument
-    ldrb    w3, [x3] // Storing in operator
+    ldrb    w3, [x3] // Store operator
 
     ldr     x2, [x1, #24] // third command line argument
     bl      _str_to_int
     ldr     w1, [x2]
 
+    // Compare operators
     cmp     w3, #'+'
     b.eq    _addition
 
@@ -43,7 +44,7 @@ _subtraction:
 
 _division:
     cmp     w1, #0
-    b.eq    _invalid_argument
+    b.eq    _zero_division_error
     udiv    w0, w0, w1
     bl      _int_to_str
     b       _print_value
@@ -56,6 +57,12 @@ _multiplication:
 _invalid_argument:
     adr     x1, error_msg
     mov     x19, #50
+    b       _print_value
+
+_zero_division_error:
+    adr     x1, zero_division_error_msg
+    mov     x19, #20
+    b       _print_value
 
 _print_value:
     mov     x0, #1
@@ -124,3 +131,6 @@ _int_convert_loop:
 
 error_msg:
     .ascii "Invalid Arguments: Example usage <program> 8 + 7"
+
+zero_division_error_msg:
+    .ascii "Zero Division Error"

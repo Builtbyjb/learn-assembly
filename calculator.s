@@ -53,7 +53,7 @@ _multiplication:
 
 _invalid_argument:
     adr     x1, error_msg
-    mov     x19, #48
+    mov     x19, #72
     b       _print_value
 
 _zero_division_error:
@@ -135,7 +135,7 @@ _return_int:
     .ascii  "\n"
 
 error_msg:
-    .ascii "Invalid Arguments: Example usage <program> 8 + 7"
+    .ascii "Invalid Arguments: Example usage <program> 8 <operator = *, + , /, \\*> 7"
 
 zero_division_error_msg:
     .ascii "Zero Division Error"

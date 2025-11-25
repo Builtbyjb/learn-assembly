@@ -109,7 +109,7 @@ _return_int:
  _int_to_str:
     mov     x19, #0 // character count
     mov     w2, #10 // divisor
-    sub     sp, sp, #128 // Allocate memory on the stack
+    sub     sp, sp, #64 // Allocate memory on the stack
 
  _str_convert_loop:
     udiv    w4, w0, w2

@@ -20,6 +20,8 @@ gcc calculator.s -o calculator
 ```
 
 Run binary
+> [!NOTE]
+> Floating point operations are not supported.
 ```sh
 ./calculator 6 + 7
 ```

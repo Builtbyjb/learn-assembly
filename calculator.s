@@ -11,18 +11,20 @@ _main:
     cmp     x0, #4 // Check if the argc is equal to 4
     b.ne   _invalid_argument
 
+    mov     x19, x1
+
     // First command line argument
-    ldr     x10, [x1, #8]
-    bl      _str_to_int
-    mov     x11, x10
+    ldr     x0, [x19, #8]
+    bl      _atof
+    fmov     d11, d0
 
     // third command line argument
-    ldr     x10, [x1, #24]
-    bl      _str_to_int
-    mov     x12, x10
+    ldr     x0, [x19, #24]
+    bl      _atof
+    fmov    d12, d0
 
     // Second command line argument (operator)
-    ldr     x10, [x1, #16]
+    ldr     x10, [x19, #16]
     ldrb    w9, [x10]
 
 _compare:  // Compare operators
@@ -36,21 +38,21 @@ _compare:  // Compare operators
     b.eq    _division
 
 _addition:
-    add     x11, x11, x12
+    fadd     d11, d11, d12
     b       _print_value
 
 _subtraction:
-    sub     x11, x11, x12
+    fsub     d11, d11, d12
     b       _print_value
 
 _division:
-    cmp     x12, #0
+    fcmp     d12, #0.0
     b.eq    _zero_division_error
-    udiv    x11, x11, x12
+    fdiv    d11, d11, d12
     b       _print_value
 
 _multiplication:
-    mul     x11, x11, x12
+    fmul     d11, d11, d12
     b       _print_value
 
 _invalid_argument:
@@ -58,6 +60,7 @@ _invalid_argument:
     adrp    x0, fmt_str@PAGE
     add     x0, x0, fmt_str@PAGEOFF
     adr     x1, error_msg
+    str     x1, [sp]
     bl      _printf
     b       _exit
 
@@ -66,22 +69,14 @@ _zero_division_error:
     adrp    x0, fmt_str@PAGE
     add     x0, x0, fmt_str@PAGEOFF
     adr     x1, zero_division_error_msg
-    bl      _printf
-    b       _exit
-
-_no_float_support_error:
-    // Print floating point support message
-    adrp    x0, fmt_str@PAGE
-    add     x0, x0, fmt_str@PAGEOFF
-    adr     x1, no_float_support_error_msg
+    str     x1, [sp]
     bl      _printf
     b       _exit
 
 _print_value:
     adrp    x0, fmt_result@PAGE
     add     x0, x0, fmt_result@PAGEOFF
-    mov     x1, x11
-    str     x1, [sp]
+    str     d11, [sp]
     bl      _printf
     b       _exit
 
@@ -90,46 +85,15 @@ _exit:
     ldp     x29, x30, [sp], #16     // Restore x29 and x30
     ret
 
-_str_to_int:
-    mov     x13, #0 // Accumulator (result)
-    mov     x14, #10 // Constant
-    mov     x15, #0 // Sign flag (0 = +, 1 = -)
-
-    // Check for negative sign
-    ldrb    w9, [x10] // Load first byte
-    cmp     w9, #45 // Check if the first byte (character) is a negative sign ('-' is 45 is ASCII)
-    b.ne    _int_convert_loop // If the first byte (character) is not negative start the loop
-    mov     x15, #1 // Update negative flag
-    add     x10, x10, #1 // Move the pointer to the next byte (Character)
-
-_int_convert_loop:
-    ldrb    w9, [x10], #1
-    cbz     w9, _end_int_convert_loop
-    sub     w9, w9, #48 // Subtract 48 from x9 to get integer value
-    madd    x13, x13, x14, x9
-    b       _int_convert_loop
-
-_end_int_convert_loop:
-    cmp     x15, #1
-    b.ne    _return_int
-    neg     x13, x13
-
-_return_int:
-    mov     x10, x13
-    ret
-
 error_msg:
     .asciz  "Invalid Arguments: Example usage <program> 8 <operator = *, + , /, \\*> 7"
 
 zero_division_error_msg:
     .asciz  "Zero Division Error"
 
-no_float_support_error_msg:
-    .asciz  "Floating point operations are not supported"
-
 .data
 fmt_result:
-    .asciz  "%lld\n"
+    .asciz  "%f\n"
 
 fmt_str:
     .asciz  "%s\n"

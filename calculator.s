@@ -1,4 +1,4 @@
-/* A Simple calculator written in arm63 assembly */
+/* A Simple calculator written in arm63 assembly (Apple Silicon */
 
 .global _main
 .align 4
@@ -9,11 +9,13 @@ _main:
 
     // First command line argument
     ldr     x10, [x1, #8]
+    bl      _check_float_setup
     bl      _str_to_int
     mov     x11, x10
 
     // third command line argument
     ldr     x10, [x1, #24]
+    bl      _check_float_setup
     bl      _str_to_int
     mov     x12, x10
 
@@ -63,6 +65,11 @@ _zero_division_error:
     mov     x2, #20 // Output length
     b       _print_value
 
+_no_float_support_error:
+    adr     x1, no_float_support_error_msg
+    mov     x2, #43
+    b       _print_value
+
 _print_value:
     mov     x0, #1
     mov     x16, #4 // Syscall to write to stdout
@@ -79,6 +86,21 @@ _exit:
     mov     x0, #0
     mov     x16, #1
     svc     #0x80
+
+// Check if a command line value is float
+_check_float_setup:
+    mov     x12, #0
+
+_check_float:
+    ldrb    w9, [x10, x12]
+    cbz     w9, _return_check_float
+    cmp     w9, #'.'
+    b.eq    _no_float_support_error
+    add     x12, x12, #1
+    b       _check_float
+
+_return_check_float:
+    ret
 
 _str_to_int:
     mov     x13, #0 // Accumulator (result)
@@ -153,7 +175,10 @@ _n_copy:
     .ascii  "\n"
 
 error_msg:
-    .ascii "Invalid Arguments: Example usage <program> 8 <operator = *, + , /, \\*> 7"
+    .ascii  "Invalid Arguments: Example usage <program> 8 <operator = *, + , /, \\*> 7"
 
 zero_division_error_msg:
-    .ascii "Zero Division Error"
+    .ascii  "Zero Division Error"
+
+no_float_support_error_msg:
+    .ascii  "Floating point operations are not supported"

@@ -11,7 +11,7 @@ _main:
     cmp     x0, #4 // Check if the argc is equal to 4
     b.ne   _invalid_argument
 
-    mov     x19, x1
+    mov     x19, x1 // Stores the value of x1 in x19, incase x1 gets modified by _atof
 
     // First command line argument
     ldr     x0, [x19, #8]

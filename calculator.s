@@ -18,7 +18,8 @@ _main:
     mov     x12, x10
 
     // Second command line argument (operator)
-    ldrb    w9, [x1, #16]
+    ldr     x10, [x1, #16]
+    ldrb    w9, [x10]
 
 _compare:  // Compare operators
     cmp     w9, #'+'
@@ -111,6 +112,15 @@ _return_int:
     mov     x13, #10 // divisor
     sub     sp, sp, #64 // Allocate memory on the stack
 
+_check_negative:
+    mov     x12, #0
+    cmp     x11, #0
+    b.ge    _str_convert_loop
+    mov     x12, #45
+    str     x12, [sp, x2]
+    add     x2, x2,  #1
+    neg     x11, x11
+
  _str_convert_loop:
     udiv    x14, x11, x13
     msub    x15, x14, x13, x11 // Get remainder
@@ -123,12 +133,19 @@ _return_int:
     sub     x9, x2, #1
 
  _copy:
+    cmp     x12, #0
+    b.eq    _n_copy
+    mov     w15, #'-'
+    strb    w15, [x1, x14]
+    add     x14, x14, #1 // Increasing by 1 makes sure we never get to the last byte which is "-" in a negative case
+
+_n_copy:
     ldrb    w15, [sp, x9]
     strb    w15, [x1, x14]
     add     x14, x14, #1
     sub     x9, x9, #1
     cmp     x14, x2
-    b.lt    _copy
+    b.lt    _n_copy
     add     sp, sp, #64
     ret
 

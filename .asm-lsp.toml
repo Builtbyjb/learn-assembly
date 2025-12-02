@@ -1,7 +1,0 @@
-[opts]
-diagnostics = true
-
-[[project]]
-path = "."
-assembler = "gas"
-instruction_set = "arm"

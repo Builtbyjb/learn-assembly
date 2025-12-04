@@ -32,6 +32,7 @@ _compare:  // Compare operators
     b.eq    _subtraction
     cmp     w9, #'/'
     b.eq    _division
+    b       _invalid_argument
 
 _addition:
     add     x11, x11, x12
@@ -71,12 +72,12 @@ _no_float_support_error:
     b       _print_value
 
 _print_value:
-    mov     x0, #1
+    mov     x0, #0
     mov     x16, #4 // Syscall to write to stdout
     svc     #0x80 // Execute syscall
 
 _print_newline:
-    mov     x0, #1
+    mov     x0, #0
     adr     x1, newline
     mov     x2, #1
     mov     x16, #4
